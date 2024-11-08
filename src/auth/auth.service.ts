@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserDocument } from './schemas/user.schema';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -57,7 +58,37 @@ export class AuthService {
     return { username: user.username, email: user.email, token };
   }
 
-  private generateToken(user: UserDocument): string {
-    return this.jwtService.sign({ id: user._id, username: user.username });
+  generateToken(user: any) {
+    const payload = { username: user.username, sub: user._id };
+    const secret = process.env.JWT_SECRET; // This should access the JWT_SECRET from the .env file
+
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
+    return this.jwtService.sign(payload, { secret, expiresIn: '1h' });
+  }
+
+  async updateProfile(
+    userId: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: updateProfileDto },
+      { new: true, runValidators: true },
+    );
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
+  }
+
+  async getProfile(userId: string): Promise<User> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
   }
 }
