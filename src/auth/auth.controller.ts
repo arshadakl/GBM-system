@@ -6,6 +6,7 @@ import {
   UseGuards,
   Patch,
   Request,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
@@ -13,6 +14,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RequestWithUser } from './types/request-with-user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -43,14 +45,13 @@ export class AuthController {
     return this.authService.getProfile(userId);
   }
 
-  @Patch('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @Patch('profile')
   async updateProfile(
-    @Request() req,
+    @Req() req: RequestWithUser,
     @Body() updateProfileDto: UpdateProfileDto,
-  ): Promise<any> {
-    const userId = req.user._id; // Get the userId from the JWT token
+  ) {
+    const userId = req.user.id;
     return this.authService.updateProfile(userId, updateProfileDto);
   }
 }
