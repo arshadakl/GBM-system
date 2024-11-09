@@ -12,9 +12,12 @@ import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { RequestWithUser } from './types/request-with-user.interface';
+import { AdminSignupDto } from './dto/admin.signup.dto';
+import { AdminLoginDto } from './dto/admin.login.dto';
+import { UserJwtStrategy } from './strategies/user.jwt.strategy';
+// import { AdminSignupDto } from './dto/admin.signup.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +34,16 @@ export class AuthController {
     );
   }
 
+  // @Post('admin-signup')
+  // @ApiBody({ type: SignupDto })
+  // async admin_signup(@Body() signupDto: AdminSignupDto) {
+  //   return this.authService.admin_signup(
+  //     signupDto.username,
+  //     signupDto.email,
+  //     signupDto.password,
+  //   );
+  // }
+
   @Post('login')
   @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto) {
@@ -38,14 +51,14 @@ export class AuthController {
   }
 
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(UserJwtStrategy)
   @ApiBearerAuth() // Specify the bearer token requirement
   async getProfile(@Request() req): Promise<any> {
-    const userId = req.user._id; // Assume JWT token contains the user ID
+    const userId = req.user.id;
     return this.authService.getProfile(userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(UserJwtStrategy)
   @Patch('profile')
   async updateProfile(
     @Req() req: RequestWithUser,
@@ -53,5 +66,20 @@ export class AuthController {
   ) {
     const userId = req.user.id;
     return this.authService.updateProfile(userId, updateProfileDto);
+  }
+
+  @Post('admin-signup')
+  async adminSignup(@Body() AdminDto: AdminSignupDto) {
+    // const { username, email, password } = body;
+    return this.authService.adminSignup(
+      AdminDto.username,
+      AdminDto.email,
+      AdminDto.password,
+    );
+  }
+
+  @Post('admin-login')
+  async adminLogin(@Body() LoginDto: AdminLoginDto) {
+    return this.authService.adminLogin(LoginDto.email, LoginDto.password);
   }
 }
