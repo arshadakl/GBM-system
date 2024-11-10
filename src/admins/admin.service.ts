@@ -1,21 +1,3 @@
-// import { Injectable } from '@nestjs/common';
-// import { InjectModel } from '@nestjs/mongoose';
-// import { Model } from 'mongoose';
-// import { Admin, AdminDocument } from 'src/auth/schemas/admin.schema';
-// // import { UpdateProfileDto } from 'src/auth/dto/update-profile.dto';
-
-// @Injectable()
-// export class AdminService {
-//   constructor(
-//     @InjectModel(Admin.name) private AdminModel: Model<AdminDocument>,
-//   ) {}
-
-//   async findById(userId: string): Promise<Admin> {
-//     return this.AdminModel.findById(userId).exec();
-//   }
-
-// }
-
 import {
   Injectable,
   ConflictException,

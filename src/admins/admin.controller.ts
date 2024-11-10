@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { JwtAdminGuard } from 'src/auth/guards/admin.jwt.guard';
+import { AdminGuard } from 'src/auth/guards/admin.guard';
 
 @Controller('admin')
 export class AdminController {
   @Get('dashboard')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(AdminGuard)
   getAdminDashboard() {
     return { message: 'Admin Dashboard' };
   }

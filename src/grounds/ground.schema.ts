@@ -5,23 +5,23 @@ export type GroundDocument = Ground & Document;
 
 @Schema({ timestamps: true })
 export class Ground {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   name: string;
 
   @Prop({ required: true })
   location: string;
 
   @Prop({ required: true })
-  type: string; // e.g., 'football', 'cricket'
+  type: string;
 
   @Prop({ type: [String], default: [] })
-  capabilities: string[]; // e.g., ['5s', '6s', '7s', '11s']
+  capabilities: string[];
 
   @Prop({ required: true })
   price: number;
 
   @Prop({ default: false })
-  hasLighting: boolean; // True if lighting is available
+  hasLighting: boolean;
 }
 
 export const GroundSchema = SchemaFactory.createForClass(Ground);

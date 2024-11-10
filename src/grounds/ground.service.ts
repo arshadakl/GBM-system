@@ -7,7 +7,8 @@ import { Ground, GroundDocument } from './ground.schema';
 @Injectable()
 export class GroundService {
   constructor(
-    @InjectModel(Ground.name) private groundModel: Model<GroundDocument>,
+    @InjectModel(Ground.name)
+    private readonly groundModel: Model<GroundDocument>,
   ) {}
 
   async createGround(createGroundDto: CreateGroundDto): Promise<Ground> {

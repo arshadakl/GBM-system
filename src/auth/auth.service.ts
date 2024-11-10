@@ -10,15 +10,15 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserService } from 'src/users/user.service';
-import { User, UserDocument } from './schemas/user.schema';
 import { AdminService } from 'src/admins/admin.service';
 import { Admin, AdminDocument } from 'src/admins/schemas/admin.schema';
+import { User, UserDocument } from 'src/users/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
+    @InjectModel(Admin.name) private readonly adminModel: Model<AdminDocument>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly adminService: AdminService,
@@ -51,7 +51,7 @@ export class AuthService {
 
     await newUser.save();
 
-    const token = this.generateUserToken(newUser);
+    const token = await this.generateUserToken(newUser);
     return { username: newUser.username, email: newUser.email, token };
   }
 
@@ -61,35 +61,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    const token = this.generateUserToken(user);
+    const token = await this.generateUserToken(user);
     return { username: user.username, email: user.email, token };
   }
-
-  // Admin signup
-  // async admin_signup(username: string, email: string, password: string) {
-  //   if (!username || !email || !password) {
-  //     throw new BadRequestException('Please fill all fields');
-  //   }
-
-  //   const existingUser = await this.userModel.findOne({
-  //     $or: [{ email }, { username }],
-  //   });
-  //   if (existingUser) {
-  //     throw new BadRequestException('Email or username already exists');
-  //   }
-
-  //   const hashedPassword = await bcrypt.hash(password, 20);
-  //   const newAdmin = new this.adminModel({
-  //     username,
-  //     email,
-  //     password: hashedPassword,
-  //   });
-
-  //   await newAdmin.save();
-
-  //   const token = this.adminGenerateToken(newAdmin);
-  //   return { username: newAdmin.username, email: newAdmin.email, token };
-  // }
 
   async adminSignup(username: string, email: string, password: string) {
     return this.adminService.createAdmin(username, email, password);
@@ -107,54 +81,22 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    // const payload = {
-    //   email: admin.email,
-    //   // sub: admin._id,
-    //   role: admin.role,
-    // };
-    // const accessToken = this.jwtService.sign(payload);
     const accessToken = await this.generateAdminToken(admin);
 
     return { accessToken };
   }
 
-  // generateToken(user: any) {
-  //   const payload = { username: user.username, sub: user._id };
-  //   const secret = process.env.JWT_SECRET;
-
-  //   if (!secret) {
-  //     throw new Error('JWT_SECRET is not defined');
-  //   }
-
-  //   return this.jwtService.sign(payload, { secret, expiresIn: '5h' });
-  // }
-
-  // adminGenerateToken(admin: any) {
-  //   const payload = {
-  //     username: admin.username,
-  //     sub: admin._id,
-  //     role: admin.role,
-  //   };
-  //   const secret = process.env.JWT_SECRET + process.env.JWT_SECRET;
-
-  //   if (!secret) {
-  //     throw new Error('JWT_SECRET is not defined');
-  //   }
-
-  //   return this.jwtService.sign(payload, { secret, expiresIn: '1h' });
-  // }
-
   async generateUserToken(user: any) {
-    const payload = { email: user.email, sub: user._id, role: user.role };
+    const payload = { email: user.email, sub: user._id, role: 'user' };
     return this.jwtService.sign(payload, {
-      secret: process.env.USER_JWT_SECRET,
+      secret: process.env.JWT_SECRET,
     });
   }
 
   async generateAdminToken(admin: any) {
     const payload = { email: admin.email, sub: admin._id, role: admin.role };
     return this.jwtService.sign(payload, {
-      secret: process.env.USER_JWT_SECRET,
+      secret: process.env.JWT_SECRET,
     });
   }
 
